@@ -28,7 +28,16 @@ at the same time, accounting for risks\\
 This reposity gives all relevant codes for reproduce the training, validation and testing process of the experiments from "Does Knowledge About Perceptual Uncertainty Help an Agent in Automated Driving". 
 The code based on the reposity of Razak: https://github.com/idreesshaikh/Autonomous-Driving-in-Carla-using-Deep-Reinforcement-Learning
 
-
+## Installation
+Install Carla 15 Release: Explanation and steps can be found at: https://carla.readthedocs.io/en/0.9.15/start_quickstart/ \
+For this project Unreal Engine 4.26 is used. \
+Install the Git Repo
+```
+cd existing_repo
+git remote add origin https://github.com/nagrab/Does-Knowledge-About-Perceptual-Uncertainty-Help-an-Agent-in-Automated-Driving.git
+git branch -M main
+git push -uf origin main
+```
 
 ## Start training:
 ```
@@ -43,13 +52,10 @@ with pretrained weights:
 python continuous_driver.py --train True --town Town02 --load-checkpoint True --done episode_number --run_list True --runpath /path/to/checkpoint/
 ```
 
-## Installation
-Install Carla 15 Release: Explanation and steps can be found at: https://carla.readthedocs.io/en/0.9.15/start_quickstart/ \
-For this project Unreal Engine 4.26 is used. \
-Install the Git Repo
+## Testing:
+For testing, the weights of the best validated policy is used. Therefore, the agent has trained before starting testing. 
+The cases that should be tested are chosen (MPC here), the time sampler and sampler are defined and the chosen policy is chosen.
 ```
-cd existing_repo
-git remote add origin https://github.com/nagrab/Does-Knowledge-About-Perceptual-Uncertainty-Help-an-Agent-in-Automated-Driving.git
-git branch -M main
-git push -uf origin main
+python continuous_driver.py --train False --town Town02 --case "abcde" --sampler True --timesampler random --done episode
 ```
+
