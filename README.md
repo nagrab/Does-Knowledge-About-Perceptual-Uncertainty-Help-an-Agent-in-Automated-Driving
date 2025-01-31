@@ -22,7 +22,7 @@ perception leads to a conservative driving behavior of the agent.
 Furthermore, when adding the information about the current
 uncertainty directly to the state space, the agent adapts to the
 specific situation and in general accomplishes its task faster while,
-at the same time, accounting for risks\ 
+at the same time, accounting for risks.
 
 ## Information
 This reposity gives all relevant codes for reproduce the training, validation and testing process of the experiments from "Does Knowledge About Perceptual Uncertainty Help an Agent in Automated Driving". 
