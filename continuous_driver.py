@@ -153,7 +153,7 @@ def runner():
     #                           ALGORITHM
     #========================================================================
     # done_list = [0,99,199,299,399,499,599,699,799,899]
-    # csvfile = '/home/carla-admin/ma-grabowsky/Autonomous-Driving-in-Carla-using-Deep-Reinforcement-Learning/vae_with_shifting/results/Town02_train_wo_pert_and_unc_lprev_lcurr_times_1_t_tmax_min_d_mal_50_new_br_th_train_each_eps_tim_mal_ga_0.999_va_0.1_500000.0_0.025_0.025_nw_img_nw_inertia_0_2_7500_1e-05/reward.csv' 
+    # csvfile = 'reward.csv' 
     # with open(csvfile, newline='') as csvfile:
     #     reader = csv.reader(csvfile, delimiter=',')
     #     print(csvfile)
@@ -176,11 +176,7 @@ def runner():
             chkpt_file = f'checkpoints/PPO/{town}_{SAVE_NAME}/checkpoint_ppo_'+str(chkt_file_nums)+'.pickle'
             print('load checkpoint')
             print(SAVE_NAME)
-            chkpt_file_weights = None
-            # print(len(next(os.walk(f'checkpoints/PPO/{town}_{SAVE_NAME}'))[2]))# - 1)
-            # chkt_file_nums = len(next(os.walk(f'checkpoints/PPO/{town}_{SAVE_NAME}'))[2]) - 1
-            # chkpt_file = 'checkpoints/PPO/Town02_train_wo_pert_and_unc_lprev_lcurr_times_1_t_tmax_min_d_mal_50_new_br_th_train_each_eps_tim_mal_ga_0.999_va_0.1_500000.0_0.025_0.025_nw_img_nw_inertia_3_2_7500_1e-05/checkpoint_ppo_599.pickle'
-            # chkpt_file_weights = '/home/carla-admin/ma-grabowsky/Autonomous-Driving-in-Carla-using-Deep-Reinforcement-Learning/vae_with_shifting/ppo/Town02_train_wo_pert_and_unc_lprev_lcurr_times_1_t_tmax_min_d_mal_50_new_br_th_train_each_eps_tim_mal_ga_0.999_va_0.1_500000.0_0.025_0.025_nw_img_nw_inertia_3_2_7500_1e-05/ppo_policy_599_.pth'
+            chkpt_file_weights = f'{PPO_CHECKPOINT_DIR}/{SAVE_NAME}/checkpoint.pth'
             print(chkpt_file)
             with open(chkpt_file, 'rb') as f:
                 data = pickle.load(f)
@@ -198,10 +194,8 @@ def runner():
                 
                 print('load checkpoint')
                 print(SAVE_NAME)
-                #print(len(next(os.walk(f'checkpoints/PPO/{town}_{SAVE_NAME}'))[2]))# - 1)
-                #chkt_file_nums = len(next(os.walk(f'checkpoints/PPO/{town}_{SAVE_NAME}'))[2]) - 1
-                chkpt_file = f'/home/carla-admin/ma-grabowsky/Autonomous-Driving-in-Carla-using-Deep-Reinforcement-Learning/checkpoints/PPO/{town}_{SAVE_NAME}/checkpoint_ppo_'+str(args.done)+'.pickle'
-                chkpt_file_weights = f'/home/carla-admin/ma-grabowsky/Autonomous-Driving-in-Carla-using-Deep-Reinforcement-Learning/vae_with_shifting/ppo/{town}_{SAVE_NAME}/ppo_policy_{args.done}_.pth'
+                chkpt_file = f'checkpoints/PPO/{town}_{SAVE_NAME}/checkpoint_ppo_'+str(args.done)+'.pickle'
+                chkpt_file_weights = f'{PPO_CHECKPOINT_DIR}/{SAVE_NAME}/checkpoint.pth'
                 print(chkpt_file)
                 print(chkpt_file_weights)
                 with open(chkpt_file, 'rb') as f:
