@@ -5,6 +5,7 @@ import random
 import copy
 import sys
 '''
+This files are not directly used for our experiments but can be used to generate different perturbations.
 Shifting vehicles in semantic segmentation to burning the truth semseg image.
 Idea: Compute contours of the searched objects, shift contour, overwrite oracle
 contours and then draw shifted contours. 
@@ -142,39 +143,6 @@ def cloning_objects(oracle_image, color,color_road,ego_position):
     list_contours = list(contours_copy)
     np.random.shuffle(list_contours)
     contours_clone = compute_shift(contours_copy, oracle_img, ego_position,clone = True)
-    # for contour_road in contours_road:
-    #     if cv2.contourArea(contour_road)<10:
-    #         continue
-    #     for j,contour in enumerate(list_contours):
-    #         if cv2.contourArea(contour_road)> cv2.contourArea(contour):
-               
-    #             min_x_road  = np.min(contour_road[:,0,0])
-    #             max_x_road  = np.max(contour_road[:,0,0])
-    #             min_y_road  = np.min(contour_road[:,0,1])
-    #             max_y_road  = np.max(contour_road[:,0,1])
-    #             min_x       = np.min(contour[:,0,0])
-    #             max_x       = np.max(contour[:,0,0])
-    #             min_y       = np.min(contour[:,0,1])
-    #             max_y       = np.max(contour[:,0,1])
-    #             dist_x_road = abs(min_x_road-max_x_road)
-    #             dist_y_road = abs(min_y_road-max_y_road)
-    #             dist_x      = abs(min_x-max_x)
-    #             dist_y      = abs(min_y-max_y)
-    #             if dist_x <= dist_x_road and dist_y < dist_y_road:
-    #                 difference_x = dist_x_road-dist_x
-    #                 difference_y = dist_y_road-dist_y
-    #                 x = random.random()
-    #                 y = random.random()
-    #                 x_shift = min_x_road+x*difference_x
-    #                 y_shift = min_y_road+y*difference_y 
-    #                 contour[:,0,0] = contour[:,0,0]-min_x
-    #                 contour[:,0,1] = contour[:,0,1]-min_y
-    #                 contour[:,0,0] = contour[:,0,0]+x_shift+min_x_road
-    #                 contour[:,0,1] = contour[:,0,1]+y_shift+min_y_road
-    #                 contours_clone.append(contour)
-    #                 list_contours.pop(j)
-
-    #                 break
     contours_clone =tuple(contours_clone)+contours
     shifted_image = cv2.fillPoly(oracle_image, pts=contours_clone, color=color)
     return shifted_image
@@ -424,87 +392,87 @@ def shifting_objects(oracle_image,  color, ego_position):
     # cv2.imwrite(os.path.join(target_path,file+'_shifting_semantic.png'), shifted_image_gt)
 
 
-# def main(source_path, target_path, color, color_id, color_road, color_road_id, ego_position, time_line_dis, gt_path):
-#     '''
-#     Main script. Here we will choose the kind of transformation
-#     Inputparameter:
-#     -------------------------------------------
-#     Source_path    : Str  : Path from the input image where the objects should be shifting
-#     Target_path    : Str  : Path where the shifting images should be saved 
-#     Color          : Array: Array of rgb values to find the object color (we are in the setting of semantic segmentation)
-#     Color_id       : Int  : Id of color
-#     Color_road     : Array: Array of rgb values of class road
-#     Color_road_id  : Int  : Id of color road
-#     Ego position   : Array: Tuple of x and y for center of ego vehicle
-#     Time_line_dis  : Int  : How many images should be the object disappeared
-#     Gt_path        : Str  : Path where the ground truth images lie
-#     '''
-#     tld         = 0
-#     tlc         = 0
-#     ids         = []
-#     ids_old     = []
-#     number_disp = []
-#     disap = True
-#     if gt_path != source_path: 
-#         print('Please add also a target gt path, to use the same dataloader later.')
-#         sys.exit()
+def main(source_path, target_path, color, color_id, color_road, color_road_id, ego_position, time_line_dis, gt_path):
+    '''
+    Main script. Here we will choose the kind of transformation
+    Inputparameter:
+    -------------------------------------------
+    Source_path    : Str  : Path from the input image where the objects should be shifting
+    Target_path    : Str  : Path where the shifting images should be saved 
+    Color          : Array: Array of rgb values to find the object color (we are in the setting of semantic segmentation)
+    Color_id       : Int  : Id of color
+    Color_road     : Array: Array of rgb values of class road
+    Color_road_id  : Int  : Id of color road
+    Ego position   : Array: Tuple of x and y for center of ego vehicle
+    Time_line_dis  : Int  : How many images should be the object disappeared
+    Gt_path        : Str  : Path where the ground truth images lie
+    '''
+    tld         = 0
+    tlc         = 0
+    ids         = []
+    ids_old     = []
+    number_disp = []
+    disap = True
+    if gt_path != source_path: 
+        print('Please add also a target gt path, to use the same dataloader later.')
+        sys.exit()
 
-#     for root, dir, files in os.walk(source_path):
-#         print(source_path)
-#         print(root)
-#         for file in sorted(files):
-#             if file.endswith('semantic_cs.png'):
-#                 oracle_image = cv2.imread(os.path.join(source_path,file))
-#                 gt_image = cv2.imread(os.path.join(gt_path, file.split('_')[0]+'_'+file.split('_')[1]+'.png'))[:,:,-1]
-#                 # shifting = bool(np.random.randint(2))
-#                 # cloning  = bool(np.random.randint(2))
-#                 # reshape  = bool(np.random.randint(2))
-#                 shifting = True
-#                 cloning  = True
-#                 reshape  = True
-#                 if cloning == True:
-#                     cloning_objects(copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, ego_position, color_road, copy.deepcopy(gt_image), color_id, color_road_id)
-#                 if shifting == True:
-#                     shifting_objects(copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, ego_position, copy.deepcopy(gt_image), color_id)
-#                 if reshape == True:
-#                     reshape_objects(copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, ego_position,copy.deepcopy(gt_image), color_id)
-#                 if tlc % 2*time_line_dis ==0:
-#                     tlc = 0
-#                 if tlc>time_line_dis and tlc<2*time_line_dis :
-#                     disap = False
-#                     tlc +=1
-#                     number_disp = []
-#                     ids = []
-#                     ids_old = []
-#                 else:
-#                     disap = True
-#                 if disap == True:
-#                     ids = disappear_objects(source_path,copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, color_id, ego_position, ids, copy.deepcopy(gt_image))
-#                     #Update ids and number of disappearing objects and counting the ids
-#                     if len(ids_old)==0:
-#                         ids_old = ids
-#                         for i in range(len(ids_old)):
-#                             number_disp.append(1)
-#                     else:
-#                         for k, id in enumerate(ids):
-#                             if id in ids_old:
-#                                 idx = ids_old.index(id)
-#                                 number_disp[idx]+=1
-#                                 if number_disp[idx]>time_line_dis:
-#                                     number_disp.pop(idx)
-#                                     ids.remove(id)
-#                                     ids_old.remove(id)
-#                             else:
-#                                 ids_old.append(id)
-#                                 number_disp.append(1)
-#                         for k, id in enumerate(ids_old):
+    for root, dir, files in os.walk(source_path):
+        print(source_path)
+        print(root)
+        for file in sorted(files):
+            if file.endswith('semantic_cs.png'):
+                oracle_image = cv2.imread(os.path.join(source_path,file))
+                gt_image = cv2.imread(os.path.join(gt_path, file.split('_')[0]+'_'+file.split('_')[1]+'.png'))[:,:,-1]
+                # shifting = bool(np.random.randint(2))
+                # cloning  = bool(np.random.randint(2))
+                # reshape  = bool(np.random.randint(2))
+                shifting = True
+                cloning  = True
+                reshape  = True
+                if cloning == True:
+                    cloning_objects(copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, ego_position, color_road, copy.deepcopy(gt_image), color_id, color_road_id)
+                if shifting == True:
+                    shifting_objects(copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, ego_position, copy.deepcopy(gt_image), color_id)
+                if reshape == True:
+                    reshape_objects(copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, ego_position,copy.deepcopy(gt_image), color_id)
+                if tlc % 2*time_line_dis ==0:
+                    tlc = 0
+                if tlc>time_line_dis and tlc<2*time_line_dis :
+                    disap = False
+                    tlc +=1
+                    number_disp = []
+                    ids = []
+                    ids_old = []
+                else:
+                    disap = True
+                if disap == True:
+                    ids = disappear_objects(source_path,copy.deepcopy(oracle_image), file.split('_')[0], target_path, color, color_id, ego_position, ids, copy.deepcopy(gt_image))
+                    #Update ids and number of disappearing objects and counting the ids
+                    if len(ids_old)==0:
+                        ids_old = ids
+                        for i in range(len(ids_old)):
+                            number_disp.append(1)
+                    else:
+                        for k, id in enumerate(ids):
+                            if id in ids_old:
+                                idx = ids_old.index(id)
+                                number_disp[idx]+=1
+                                if number_disp[idx]>time_line_dis:
+                                    number_disp.pop(idx)
+                                    ids.remove(id)
+                                    ids_old.remove(id)
+                            else:
+                                ids_old.append(id)
+                                number_disp.append(1)
+                        for k, id in enumerate(ids_old):
                             
-#                             if id not in ids:
-#                                 idx = ids_old.index(id)
-#                                 number_disp.pop(idx)
-#                                 ids_old.pop(idx)
-#                     ids = ids_old
-#                     tlc +=1
+                            if id not in ids:
+                                idx = ids_old.index(id)
+                                number_disp.pop(idx)
+                                ids_old.pop(idx)
+                    ids = ids_old
+                    tlc +=1
                             
 
   
