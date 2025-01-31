@@ -92,15 +92,6 @@ def runner():
     except Exception as e:
         print(e.message)
         sys.exit()
-    
-    # if train == True:
-    #     writer = SummaryWriter(f"runs/{run_name}_{action_std_init}_2000000/{town}_{SAVE_NAME}")
-    # else:
-    #     writer = SummaryWriter(f"runs/{run_name}_{action_std_init}_2000000_TEST/{town}_{SAVE_NAME}_case_{names_cases}_{TNAME}_{RUN_NUMBER}")
-    # writer.add_text(
-    #     "hyperparameters",
-    #     "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}" for key, value in vars(args).items()])))
-
 
     #Seeding to reproduce the results 
     random.seed(args.seed)
@@ -343,17 +334,6 @@ def runner():
                     
                 
                 if episode % 1 == 0:
-                    # writer.add_scalar("Episodic Reward/episode", scores[-1], episode)
-                    # writer.add_scalar("Cumulative Reward/info", cumulative_score, episode)
-                    # writer.add_scalar("Cumulative Reward/(t)", cumulative_score, timestep)
-                    # writer.add_scalar("Average Episodic Reward/info", np.mean(scores[-1]), episode)
-                    # writer.add_scalar("Average Reward/(t)", np.mean(scores[-1]), timestep)
-                    # writer.add_scalar("Episode Length (s)/info", np.mean(episodic_length), episode)
-                    # writer.add_scalar("Reward/(t)", current_ep_reward, timestep)
-                    # writer.add_scalar("Average Deviation from Center/episode", deviation_from_center/1, episode)
-                    # writer.add_scalar("Average Deviation from Center/(t)", deviation_from_center/1, timestep)
-                    # writer.add_scalar("Average Distance Covered (m)/episode", distance_covered/1, episode)
-                    # writer.add_scalar("Average Distance Covered (m)/(t)", distance_covered/1, timestep)
                     episodic_length = list()
                     deviation_from_center = 0
                     distance_covered = 0
@@ -433,17 +413,6 @@ def runner():
                         cumulative_score_valid = np.mean(scores_valid)
 
                         print('Validation: Episode: {}'.format(episode*100+curr_epis+1),', Timestep: {}'.format(timestep_val),', Reward:  {:.2f}'.format(current_ep_reward),', Average Reward:  {:.2f}'.format(cumulative_score_valid))
-                        
-                        # writer.add_scalar("Validation: Episodic Reward/episode", scores_valid[-1], episode*100+curr_epis+1)
-                        # writer.add_scalar("Validation: Cumulative Reward/info", cumulative_score_valid, episode*100+curr_epis+1)
-                        # writer.add_scalar("Validation: Cumulative Reward/(t)", cumulative_score_valid, episode*100+curr_epis+1)
-                        # writer.add_scalar("Validation: Episode Length (s)/info", np.mean(episodic_length), episode*100+curr_epis+1)
-                        # writer.add_scalar("Validation: Reward/(t)", current_ep_reward, timestep_val)
-                        # writer.add_scalar("Validation: Deviation from Center/episode", deviation_from_center, episode*100+curr_epis+1)
-                        # writer.add_scalar("Validation: Deviation from Center/(t)", deviation_from_center, episode*100+curr_epis+1)
-                        # writer.add_scalar("Validation: Distance Covered (m)/episode", distance_covered, episode*100+curr_epis+1)
-                        # writer.add_scalar("Validation: Distance Covered (m)/(t)", distance_covered, episode*100+curr_epis+1)
-
                         episodic_length = list()
                         deviation_from_center = 0
                         distance_covered = 0
@@ -516,7 +485,6 @@ def runner():
                     current_ep_reward += reward
                     # break; if the episode is over
                     if done:
-                        #episode += 1
 
                         t2 = datetime.now()
                         t3 = t2-t1
@@ -530,16 +498,7 @@ def runner():
                 cumulative_score = np.mean(scores)
                 print('Episode ends')
                 print('Validation {} : Episode: {}'.format(case_tmax,episode*100+curr_epis+1),', Timestep: {}'.format(timestep_val),', Reward:  {:.2f}'.format(current_ep_reward),', Average Reward:  {:.2f}'.format(cumulative_score))
-                
-                # writer.add_scalar("TEST: Episodic Reward/episode", scores[-1], episode)
-                # writer.add_scalar("TEST: Cumulative Reward/info", cumulative_score, episode)
-                # writer.add_scalar("TEST: Cumulative Reward/(t)", cumulative_score, timestep)
-                # writer.add_scalar("TEST: Episode Length (s)/info", np.mean(episodic_length), episode)
-                # writer.add_scalar("TEST: Reward/(t)", current_ep_reward, timestep)
-                # writer.add_scalar("TEST: Deviation from Center/episode", deviation_from_center, episode)
-                # writer.add_scalar("TEST: Deviation from Center/(t)", deviation_from_center, timestep)
-                # writer.add_scalar("TEST: Distance Covered (m)/episode", distance_covered, episode)
-                # writer.add_scalar("TEST: Distance Covered (m)/(t)", distance_covered, timestep)
+
                 if len(run)!=0:
                     with open(f'{SAVE_PATH}'+'/'+f'{town}_{SAVE_NAME}_validation_{names_cases}_{TNAME}_{RUN_NUMBER}'+f'/{episode*100+curr_epis+1}'+f'/run_{names_cases}_{episode*100+curr_epis+1}.txt','w') as file:
                         file.write(str(run))
