@@ -12,7 +12,9 @@ import os
 from parameters import *
 
 '''
+Based on:
 Source: https://github.com/idreesshaikh/Autonomous-Driving-in-Carla-using-Deep-Reinforcement-Learning
+Change done in state space by changing the camera perspective and adding uncertainty values. Changing the reward to our problem.
 '''
 class CarlaEnvironment():
 
@@ -43,14 +45,6 @@ class CarlaEnvironment():
         self.env_camera_obj = None
         self.collision_obj = None
         self.lane_invasion_obj = None
-        # self.waypoint_reward_75radius = None
-        # self.waypoint_reward_5radius = None
-        # self.waypoint_reward_25radius = None
-        # self.waypoint_reward_1radius = None
-        # self.waypoint_reward_index_75radius = 0
-        # self.waypoint_reward_index_5radius = 0
-        # self.waypoint_reward_index_25radius = 0
-        # self.waypoint_reward_index_1radius = 0
         # Two very important lists for keeping track of our actors and their observations.
         vegetation = world.get_environment_objects(carla.CityObjectLabel.Vegetation)
         world.enable_environment_objects([*map(lambda obj: obj.id, vegetation)], False)
@@ -76,8 +70,6 @@ class CarlaEnvironment():
                 #self.set_other_vehicles()
                 
             self.remove_sensors()
-
-
             # Blueprint of our main vehicle
             vehicle_bp = self.get_vehicle(CAR_NAME)
 
@@ -86,7 +78,6 @@ class CarlaEnvironment():
                 self.total_distance = 250
             elif self.town == "Town02":
                 
-               
                 if not os.path.exists(f'spawn_points_{self.town}_{SAVE_NAME}') :
                     all_spawn_points = self.map.get_spawn_points()
                     print('spawn point path generation')
@@ -107,7 +98,7 @@ class CarlaEnvironment():
                 transform = self.map.get_spawn_points()[25]
                 self.total_distance = 100
             else:
-                transform = self.map.get_spawn_points()[1]#random.choice(self.map.get_spawn_points())
+                transform = random.choice(self.map.get_spawn_points())
                 self.total_distance = 250
 
             self.vehicle = self.world.try_spawn_actor(vehicle_bp, transform)
@@ -277,6 +268,8 @@ class CarlaEnvironment():
 
             self.episode_start_time = time.time()
             self.image_obs = self.image_obs[0:25, 10:14]
+            #Following can be used for saving observation. Be aware of enough space for the amount of files that are created.
+            
             # if val == False:
             #     if not os.path.exists(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}', f'episode_{episode+1}')) or os.stat(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}',f'episode_{episode+1}')).st_size == 0:
             #         os.makedirs(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}',f'episode_{episode+1}'))
@@ -290,8 +283,7 @@ class CarlaEnvironment():
             #         # os.makedirs(f'observation_{self.town}_{SAVE_NAME}_validation/episode_{episode+1}_rgb')
             #         # os.makedirs(f'observation_{self.town}_{SAVE_NAME}_validation/episode_{episode+1}_front')
             #     cv2.imwrite(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}_validation_{case_name}_{TNAME}_{RUN_NUMBER}',f'episode_{episode+1}_e','obs_img_0.png'),self.image_obs)
-            if case != 'e' and len(self.distance) > 0:
-                self.image_obs = self.disappear_object(self.image_obs, self.distance)
+            
             # if val == False:
             #     if not os.path.exists(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}',f'episode_{episode+1}')) or os.stat(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}',f'episode_{episode+1}')).st_size == 0:
             #         os.makedirs(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}',f'episode_{episode+1}'))
@@ -309,7 +301,8 @@ class CarlaEnvironment():
             #     cv2.imwrite(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}_validation_{case_name}_{TNAME}_{RUN_NUMBER}',f'episode_{episode+1}','obs_img_0.png'),self.image_obs)
                 # cv2.imwrite(os.path.join(f'observation_{self.town}_{SAVE_NAME}_validation',f'episode_{episode+1}_rgb','obs_img_0.png'),self.rgb_obs)
                 # cv2.imwrite(os.path.join(f'observation_{self.town}_{SAVE_NAME}_validation',f'episode_{episode+1}_front','obs_img_0.png'),self.front_obs)
-                
+            if case != 'e' and len(self.distance) > 0:
+                self.image_obs = self.disappear_object(self.image_obs, self.distance)
             self.image_obs = cv2.cvtColor(self.image_obs, cv2.COLOR_RGB2GRAY)
             self.image_obs = self.image_obs.flatten()
             #self.image_obs= cv2.cvtColor(self.image_obs, cv2.COLOR_RGB2BGR)
@@ -368,53 +361,24 @@ class CarlaEnvironment():
             
             # Action fron action space for contolling the vehicle with a discrete action
             if self.continous_action_space:
-                # steer = float(action_idx[0])
-                # steer = max(min(steer, 1.0), -1.0)
                 steer = 0.0
-                #throttle = float((action_idx[1] + 1.0)/2)
                 throttle = float((action_idx[0] + 1.0)/2)
                 throttle = max(min(throttle, 1.0), 0.0)
-                #brake = float((action_idx[2]+1.0)/2)
                 brake = float((action_idx[1]+1.0)/2)
                 brake = max(min(brake,1.0), 0.0)
                 
-                # velocity_modification = float(action_idx[0])
-                # velocity_modification = max(min(velocity_modification,1.0),-1.0)
                 start_action = time.time()
-                # if velocity_modification>0:
-                #     throttle = velocity_modification
-                #     brake = 0.0
-                #     self.vehicle.apply_control(carla.VehicleControl(throttle=self.throttle*0.9 + throttle*0.1))
-                # else:
-                #     throttle = 0.0
-                #     brake = velocity_modification
-                #     self.vehicle.apply_control(carla.VehicleControl(brake = self.brake*0.9+brake*0.1))
                 if brake > throttle:
-                    
-                    #self.vehicle.apply_control(carla.VehicleControl(steer=self.previous_steer*0.9 + steer*0.1,  brake = self.brake*0.9+brake*0.1))
-                    #self.vehicle.apply_control(carla.VehicleControl(brake = self.brake*0.9+brake*0.1))
                     self.vehicle.apply_control(carla.VehicleControl(brake=self.brake*0.1+brake*0.9))
                     self.throttle = 0.0
-                    self.brake = brake
+                    self.brake = brake*0.9+0.1*self.brake
                 else:
-                    #self.vehicle.apply_control(carla.VehicleControl(steer=self.previous_steer*0.9 + steer*0.1, throttle=self.throttle*0.9 + throttle*0.1))
-                    #self.vehicle.apply_control(carla.VehicleControl(throttle=self.throttle*0.9 + throttle*0.1))
                     self.vehicle.apply_control(carla.VehicleControl(throttle=self.throttle*0.1+throttle*0.9))
-                    self.throttle = throttle
+                    self.throttle = throttle*0.9+0.1*self.throttle
                     self.brake = 0.0
                 end_action = time.time()
-                self.previous_steer = steer
-                # self.throttle = throttle
-                # self.brake = brake
             else:
-                steer = self.action_space[action_idx]
-                if self.velocity < 20.0:
-                    self.vehicle.apply_control(carla.VehicleControl(steer=self.previous_steer*0.9 + steer*0.1, throttle=1.0))
-                else:
-                    self.vehicle.apply_control(carla.VehicleControl(steer=self.previous_steer*0.9 + steer*0.1))
-                self.previous_steer = steer
-                self.throttle = 1.0
-                #self.brake = 0.0
+                print('Make sure to have a contiuous action space')
             
             # Traffic Light state
             if self.vehicle.is_at_traffic_light():
@@ -429,17 +393,6 @@ class CarlaEnvironment():
 
             # Location of the car
             self.location = self.vehicle.get_location()
-
-            #geo_loc = self.map.transform_to_geolocation(self.location)
-            if 0.0< self.velocity <= 10.0:
-                color_now = carla.Color(255,0,0,128)
-            elif 10.0 < self.velocity < 20.0:
-                color_now = carla.Color(0,0,255,128)
-            else:
-                color_now = carla.Color(0,255,0,128)
-            #self.world.debug.draw_point(self.location, size=0.05, life_time=0, color=color_now)
-
-            #transform = self.vehicle.get_transform()
             # Keep track of closest waypoint on the route
             waypoint_index = self.current_waypoint_index
             for _ in range(len(self.route_waypoints)):
@@ -451,22 +404,6 @@ class CarlaEnvironment():
                     waypoint_index += 1
                 else:
                     break
-
-            # if self.waypoint_reward_index_75radius != waypoint_index and self.waypoint_reward_index_75radius != waypoint_index+1 and self.waypoint_reward_index_75radius != waypoint_index+2:
-            #     self.waypoint_reward_index_75radius = waypoint_index
-            #     self.waypoint_reward_75radius = self.route_waypoints[(self.waypoint_reward_index_75radius) % len(self.route_waypoints)]
-
-            # if self.waypoint_reward_index_5radius != waypoint_index and self.waypoint_reward_index_5radius != waypoint_index +1 and self.waypoint_reward_index_5radius != waypoint_index +2: 
-            #     self.waypoint_reward_index_5radius = waypoint_index
-            #     self.waypoint_reward_5radius = self.route_waypoints[(self.waypoint_reward_index_5radius) % len(self.route_waypoints)]
-
-            # if self.waypoint_reward_index_25radius != waypoint_index and self.waypoint_reward_index_25radius != waypoint_index +1 and self.waypoint_reward_index_25radius != waypoint_index +2:
-            #     self.waypoint_reward_index_25radius = waypoint_index
-            #     self.waypoint_reward_25radius = self.route_waypoints[(self.waypoint_reward_index_25radius) % len(self.route_waypoints)]
-
-            # if self.waypoint_reward_index_1radius != waypoint_index and self.waypoint_reward_index_1radius != waypoint_index+1 and self.waypoint_reward_index_1radius != waypoint_index+2:
-            #     self.waypoint_reward_index_1radius = waypoint_index
-            #     self.waypoint_reward_1radius = self.route_waypoints[(self.waypoint_reward_index_1radius) % len(self.route_waypoints)]
 
             self.current_waypoint_index = waypoint_index
             # Calculate deviation from center of the lane
@@ -492,30 +429,19 @@ class CarlaEnvironment():
             if len(self.collision_history) != 0:
                 self.reward_velocity=0
                 done = True
-                reward = -50#50#-15#-7500*alpha+(self.timesteps-1) * alpha
+                reward = -50
                 self.fresh_start = True
             elif self.distance_from_center > self.max_distance_from_center: #2.4
                 self.reward_velocity=0
                 done = True
-                reward = -50#50#-15#-7500*alpha+(self.timesteps-1) * alpha
+                reward = -50
                 self.fresh_start = True
-            #elif self.episode_start_time +  < time.time() and self.timesteps > 100 and np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.spawn_location)[0:2])<3.0:  #ab nun 5 sek
+            
             elif self.timesteps > 500 and np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.spawn_location)[0:2])<3.0:
-                reward = -50#50
+                reward = -50
                 done = True
                 self.fresh_start = True 
-            # elif self.episode_start_time + 10 < time.time() and self.velocity < 0.0:
-            #     reward = -50
-            #     self.reward_velocity=0
-            #     done = True
-            # elif self.velocity > self.max_speed:
-            #     reward = -10
-            #     self.reward_velocity=0
-            #     done = True
-            # elif np.linalg.norm(self.vector(self.route_waypoints[0 % len(self.route_waypoints)].transform.location)-self.vector(self.location))<3.0 and self.episode_start_time+8<time.time():#waypoint instead of time
-            #     reward = -50
-            #     self.reward_velocity=0
-            #     done = True
+          
 
 
             # Interpolated from 1 when centered to 0 when 3 m from center
@@ -526,70 +452,17 @@ class CarlaEnvironment():
             if not done:
 
                 if self.continous_action_space:
-                    # if self.velocity < 5.0:
-                    #     reward = max(1-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])/150,0.0)*0.5
-                    # else:
-                    #     reward = max(1-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])/150,0.0)
-                    #reward ||loc_prev-end||--||loc_curr-end||:
-                    # reward += (np.linalg.norm(self.vector(self.previous_location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2]))
-                    # self.previous_location = self.location
-                    #reward 1/||loc_curr-end||
-                    # if self.velocity > 0.5:
-                    #     reward += 1/np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])
-                    # else:
-                    #     reward = 0
-                    #reward -= alpha
-                    #
-
-                    #reward: (||l_prev-l_end||-||l_curr-l_end||)*(d_max-d)
+                    #reward: (||l_prev-l_end||-||l_curr-l_end||)*(beta+beta_tild*(1-t/tmax))
                     lprev_lcurr = np.linalg.norm(self.vector(self.previous_location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])
-                    #d_min_dmax = np.linalg.norm(self.vector(self.spawn_location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])
                     d_min_dmax = (2-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])/np.linalg.norm(self.vector(self.spawn_location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2]))
-                    #t_tmax = 2-self.timesteps/7500
                     t_tmax = (BETA+BETA_TILDE*(1-self.timesteps/TMAX))
-                    reward += lprev_lcurr*t_tmax#*(d_min_dmax)#+1)
-                    #reward += ((BETA*lprev_lcurr)-BETA_TILDE/TMAX*1/200*self.timesteps)
+                    reward += lprev_lcurr*t_tmax
+                    
                     self.previous_location = self.location
-                    #if self.velocity > 5.0:
-                    #     reward = max(1-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])/150,0.0)
-                    # else:
-                    #     reward = 0
-                        #reward = max(1-np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.last_waypoint.transform.location)[0:2])/100,0.0)
-                    #print(np.linalg.norm(self.vector(self.current_waypoint.transform.location)-self.vector(self.location)))
-                    # if np.linalg.norm(self.vector(self.waypoint_reward_25radius.transform.location)[0:2]-self.vector(self.location)[0:2]) <= 0.25:  
-                    #     reward += 1   #+1
-                    #     self.waypoint_reward_25radius = self.route_waypoints[(self.waypoint_reward_index_25radius+1) % len(self.route_waypoints)]
-                    #     self.waypoint_reward_index_25radius +=1
-                    # if np.linalg.norm(self.vector(self.waypoint_reward_5radius.transform.location)[0:2]-self.vector(self.location)[0:2]) <= 0.5 :
-                    #     #print('25')
-                    #     reward += 1
-                    #     self.waypoint_reward_5radius = self.route_waypoints[(self.waypoint_reward_index_5radius+1) % len(self.route_waypoints)]
-                    #     self.waypoint_reward_index_5radius +=1
-                    # if np.linalg.norm(self.vector(self.waypoint_reward_75radius.transform.location)[0:2]-self.vector(self.location)[0:2]) <= 0.75:
-                    #     reward += 1
-                    #     #print('375')
-                    #     self.waypoint_reward_75radius = self.route_waypoints[(self.waypoint_reward_index_75radius+1) % len(self.route_waypoints)]
-                    #     self.waypoint_reward_index_75radius +=1
-                    
-                    # if np.linalg.norm(self.vector(self.waypoint_reward_1radius.transform.location)[0:2]-self.vector(self.location)[0:2]) <= 0.75:
-                    #     reward += 1
-                    #     #print('375')
-                    #     self.waypoint_reward_1radius = self.route_waypoints[(self.waypoint_reward_index_1radius+1) % len(self.route_waypoints)]
-                    #     self.waypoint_reward_index_1radius +=1
-                    
-                    # reward -= alpha
-                    # if self.velocity < self.min_speed:
-                    #     reward = (self.velocity / self.min_speed) * centering_factor * angle_factor    
-                    # elif self.velocity > self.target_speed:               
-                    #     reward = (1.0 - (self.velocity-self.target_speed) / (self.max_speed-self.target_speed)) * centering_factor * angle_factor  
-                    # else:                                      
-                    #     reward = 0.8*centering_factor * angle_factor + 0.2*self.velocity/self.target_speed#1.0 * centering_factor * angle_factor 
-                # else:
-                #     reward = 1.0 * centering_factor * angle_factor
-            #print(f'reward: {reward}')
+                  
             if self.timesteps >= TMAX:
                 print('Done over timesteps')
-                reward = -50#50#-alpha
+                reward = -50
                 #reward = -10
                 done = True
                 self.fresh_start = True
@@ -673,7 +546,7 @@ class CarlaEnvironment():
                 if distance_ego_front_vehicle <= 42:
                     self.distance.append(distance_ego_front_vehicle)
 
-            
+            # The commended out following part can be used to save observations. Be aware of enough place for the amout of files that are created.
                 
             # if val == False:
             #     #cv2.imwrite(os.path.join(f'observation_{self.town}_{SAVE_NAME}',f'episode_{episode+1}_rgb',f'obs_img_{self.timesteps}.png'),self.rgb_obs)
@@ -683,8 +556,7 @@ class CarlaEnvironment():
             #     #cv2.imwrite(os.path.join(f'observation_{self.town}_{SAVE_NAME}_validation',f'episode_{episode+1}_rgb',f'obs_img_{self.timesteps}.png'),self.rgb_obs)
             #     # cv2.imwrite(os.path.join(f'observation_{self.town}_{SAVE_NAME}_validation',f'episode_{episode+1}_front',f'obs_img_{self.timesteps}.png'),self.front_obs)
             #     cv2.imwrite(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}_validation_{case_name}_{TNAME}_{RUN_NUMBER}',f'episode_{episode+1}_e',f'obs_img_{self.timesteps}.png'),self.image_obs)
-            if case != 'e' and len(self.distance) > 0:
-                self.image_obs = self.disappear_object(self.image_obs, self.distance)
+            
 
             # if val == False:
             #     #cv2.imwrite(os.path.join(f'observation_{self.town}_{SAVE_NAME}',f'episode_{episode+1}_rgb',f'obs_img_{self.timesteps}.png'),self.rgb_obs)
@@ -695,13 +567,16 @@ class CarlaEnvironment():
             #     # cv2.imwrite(os.path.join(f'observation_{self.town}_{SAVE_NAME}_validation',f'episode_{episode+1}_front',f'obs_img_{self.timesteps}.png'),self.front_obs)
             #     cv2.imwrite(os.path.join(SAVE_PATH,f'observation_{self.town}_{SAVE_NAME}_validation_{case_name}_{TNAME}_{RUN_NUMBER}',f'episode_{episode+1}',f'obs_img_{self.timesteps}.png'),self.image_obs)
             #distance_ego_front_vehicle = np.linalg.norm(self.vector(self.location)[0:2]-self.vector(self.actor_list[5].get_location())[0:2])
-            
+            if case != 'e' and len(self.distance) > 0:
+                self.image_obs = self.disappear_object(self.image_obs, self.distance)
             self.image_obs = cv2.cvtColor(self.image_obs, cv2.COLOR_RGB2GRAY)
             self.image_obs = self.image_obs.flatten()
             normalized_velocity = self.velocity/self.target_speed
             normalized_distance_from_center = self.distance_from_center / self.max_distance_from_center
             normalized_angle = abs(self.angle / np.deg2rad(20))
-            ########Uncertainty
+
+            # Add Uncertainty in the observation space #
+            
             a = 0
             b = 0
             c = 0
@@ -729,15 +604,7 @@ class CarlaEnvironment():
                 
                 self.remove_sensors()
                 print('destroy actor')
-                # for actor in self.actor_list:
-                #     try:
-                #         actor.destroy()
-                #     except:
-                #         pass
-           # info_map = self.map.save_to_disk('Town2_xodr')
-           
-            #xodr_map.write(info_map)
-            # time.sleep(2)
+
             if reward < -50:
                 reward = -50 #There is some Carla bug for the initial spawning, that the ego vehicle is spawnd twice
             action_time = end_action-start_action
@@ -762,11 +629,6 @@ class CarlaEnvironment():
             self.reward_velocity=0
             if self.display_on:
                 pygame.quit()
-
-    # def string(self, location, episode):
-    #     print('Start writing')
-    #     print(location)
-    #     self.world.debug.draw_string(location, str(episode), False, carla.Color(238, 18, 137, 128), 0)
 
 # -------------------------------------------------
 # Creating and Spawning Pedestrians in our world |
@@ -838,10 +700,6 @@ class CarlaEnvironment():
             # One simple for loop for creating x number of vehicles and spawing them into the world
             if len(self.spawn_points) == 0:
                 start = True
-            #print(len(self.map.get_spawn_points()))
-            # spawning_case = random.randint(0,4)   #[first front vehicle, backward vehicle, all front vehicles, all vehicles, oracle]
-            # print(spawning_case)
-            # spawn_list_cases =[[31,30,28,87,26,25,23,20,19,97,96,22,21,5,4,18,17],[30,28,87,27,26,25,23,20,19,97,96,22,21,5,18,17],[31,28,87,26,23,19,96,21,5,4,18,17],[30,28,87,26,23,19,96,21,5,18,17],[31, 30,28,87, 27, 26, 25, 23, 20, 19, 97, 96, 22, 21, 5, 4, 18, 17]]
             spawn_list = [31, 30,28,87, 27, 26, 25, 23, 20, 19, 97, 96, 22, 21, 5, 4, 18, 17]
            # print(spawn_list)
             j = 0 #For Town02
@@ -874,8 +732,7 @@ class CarlaEnvironment():
                         self.spawn_points.append(spawn_point)
                         self.other_vehicles.append(bp_vehicle)
                     #j+=1
-                #tm.global_distance_to_leading_vehicle(2.5)
-                tm.global_percentage_speed_difference(75) #80
+                tm.global_percentage_speed_difference(75) 
             else:
                 for i in range(0,len(self.spawn_points)):
                     other_vehicle = self.world.try_spawn_actor(
@@ -887,11 +744,11 @@ class CarlaEnvironment():
                 tm.global_percentage_speed_difference(75)  #80
             print(f'Number of NPCs: {len(self.actor_list)}') 
             start = False   
-            #print("NPC vehicles have been generated in autopilot mode.")
+    
         except:
             self.client.apply_batch(
                 [carla.command.DestroyActor(x) for x in self.actor_list])
-        #return spawning_case
+        
 
 # ----------------------------------------------------------------
 # Extra very important methods: their names explain their purpose|
@@ -1063,172 +920,3 @@ class CarlaEnvironment():
                         colorize = False
             img[19:22,2] = np.array(color)
         return img
-
-#if spawning_case == 4:
-#     try:
-#         distance_31 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[1].get_location())[0:2])
-#     except:
-#         distance_31 = 200
-#         print('No NPC on spawning point 31')
-#     try:
-#         distance_4 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[16].get_location())[0:2])
-#     except:
-#         distance_4 = 200
-#         print('No NPC on spawning point 4')
-#     try:
-#         distance_25 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[7].get_location())[0:2])
-#     except:
-#         distance_25 = 200
-#         print('No NPC on spawning point 25')
-#     try:
-#         distance_20 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[9].get_location())[0:2])
-#     except:
-#         distance_20 = 200
-#         print('No NPC on spawning point 20')
-#     try:
-#         distance_ego_front_vehicle = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[5].get_location())[0:2])
-#     except:
-#         distance_ego_front_vehicle = 200
-#         print('No NPC on spawning point 27')
-#     if case == 'a':
-#         if distance_ego_front_vehicle <=42:
-#             self.distance.append(distance_ego_front_vehicle)
-#     if case == 'b' :
-#         if distance_31<15:
-#             self.distance.append(-distance_31)
-#         if distance_4 <15:
-#             self.distance.append(-distance_4)
-#     if case == 'c':
-#         if distance_25 <= 42:
-#             self.distance.append(distance_25)
-#         if distance_20 <=42:
-#             self.distance.append(distance_20)
-#         if distance_ego_front_vehicle <= 42:
-#             self.distance.append(distance_ego_front_vehicle)
-    
-#     if case == 'd':
-#         if distance_31<15:
-#             self.distance.append(-distance_31)
-#         if distance_4 <15:
-#             self.distance.append(-distance_4)
-#         if distance_25 <= 42:
-#             self.distance.append(distance_25)
-#         if distance_20 <=42:
-#             self.distance.append(distance_20)
-#         if distance_ego_front_vehicle <= 42:
-#             self.distance.append(distance_ego_front_vehicle)
-
-# elif spawning_case == 0:
-#     try:
-#         distance_31 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[1].get_location())[0:2])
-#     except:
-#         distance_31 = 200
-#         print('No NPC on spawning point 31')
-#     try:
-#         distance_4 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[15].get_location())[0:2])
-#     except:
-#         distance_4 = 200
-#         print('No NPC on spawning point 4')
-#     try:
-#         distance_25 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[6].get_location())[0:2])
-#     except:
-#         distance_25 = 200
-#         print('No NPC on spawning point 25')
-#     try:
-#         distance_ego_front_vehicle = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[8].get_location())[0:2])
-#     except:
-#         distance_ego_front_vehicle = 200
-#         print('No NPC on spawning point 20')
-
-#     if case == 'a':
-#         if distance_ego_front_vehicle <=42:
-#             self.distance.append(distance_ego_front_vehicle)
-#     if case == 'b' :
-#         if distance_31<15:
-#             self.distance.append(-distance_31)
-#         if distance_4 <15:
-#             self.distance.append(-distance_4)
-#     if case == 'c':
-#         if distance_25 <= 42:
-#             self.distance.append(distance_25)
-#         if distance_ego_front_vehicle <= 42:
-#             self.distance.append(distance_ego_front_vehicle)
-    
-#     if case == 'd':
-#         if distance_31<15:
-#             self.distance.append(-distance_31)
-#         if distance_4 <15:
-#             self.distance.append(-distance_4)
-#         if distance_25 <= 42:
-#             self.distance.append(distance_25)
-#         if distance_ego_front_vehicle <= 42:
-#             self.distance.append(distance_ego_front_vehicle)
-
-# elif spawning_case == 1:
-#     try:
-#         distance_25 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[6].get_location())[0:2])
-#     except:
-#         distance_25 = 200
-#         print('No NPC on spawning point 25')
-#     try:
-#         distance_20 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[8].get_location())[0:2])
-#     except:
-#         distance_20 = 200
-#         print('No NPC on spawning point 20')
-#     try:
-#         distance_ego_front_vehicle = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[4].get_location())[0:2])
-#     except:
-#         distance_ego_front_vehicle = 200
-#         print('No NPC on spawning point 27')
-#     if case == 'a':
-#         if distance_ego_front_vehicle <=42:
-#             self.distance.append(distance_ego_front_vehicle)
-#     # if case == 'b':
-#     #     continue
-
-#     if case == 'c':
-#         if distance_25 <= 42:
-#             self.distance.append(distance_25)
-#         if distance_20 <=42:
-#             self.distance.append(distance_20)
-#         if distance_ego_front_vehicle <= 42:
-#             self.distance.append(distance_ego_front_vehicle)
-    
-#     if case == 'd':
-        
-#         if distance_25 <= 42:
-#             self.distance.append(distance_25)
-#         if distance_20 <=42:
-#             self.distance.append(distance_20)
-#         if distance_ego_front_vehicle <= 42:
-#             self.distance.append(distance_ego_front_vehicle)
-
-# elif spawning_case == 2:
-#     try:
-#         distance_31 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[1].get_location())[0:2])
-#     except:
-#         distance_31 = 200
-#         print('No NPC on spawning point 31')
-#     try:
-#         distance_4 = np.linalg.norm(self.vector(self.vehicle.get_location())[0:2]-self.vector(self.actor_list[11].get_location())[0:2])
-#     except:
-#         distance_4 = 200
-#         print('No NPC on spawning point 4')
-    
-#     distance_ego_front_vehicle = 200
-#     # if case == 'a':
-#     #     continue
-#     if case == 'b' :
-#         if distance_31<15:
-#             self.distance.append(-distance_31)
-#         if distance_4 <15:
-#             self.distance.append(-distance_4)
-#     # if case == 'c':
-#     #     continue
-    
-#     if case == 'd':
-#         if distance_31<15:
-#             self.distance.append(-distance_31)
-#         if distance_4 <15:
-#             self.distance.append(-distance_4)
-    
