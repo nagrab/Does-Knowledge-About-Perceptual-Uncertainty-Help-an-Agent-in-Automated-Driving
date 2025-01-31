@@ -19,7 +19,7 @@ python continuous_driver.py --train True --town Town02 --load-checkpoint True --
 
 ## Installation
 Install Carla 15 Release: Explanation and steps can be found at: https://carla.readthedocs.io/en/0.9.15/start_quickstart/ \
-For this project Unreal Engine 4.26 is used. 
+For this project Unreal Engine 4.26 is used. \
 Install the Git Repo
 ```
 cd existing_repo
