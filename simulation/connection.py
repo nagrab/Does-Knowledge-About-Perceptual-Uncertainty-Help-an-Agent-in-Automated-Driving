@@ -25,7 +25,7 @@ class ClientConnection:
 
     def setup(self):
         try:
-            carla_proc = subprocess.Popen(['/home/carla-admin/driving_simulator/CARLA_0.9.15/CarlaUE4.sh','--quality-level','Low'], cwd='/home/carla-admin/driving_simulator/CARLA_0.9.15/', preexec_fn=os.setsid) 
+            carla_proc = subprocess.Popen(['/home/path/to/carla/CarlaUE4.sh','--quality-level','Low'], cwd='/home/path/to/carla/', preexec_fn=os.setsid) 
             time.sleep(10)
             # Connecting to the  Server
             self.client = carla.Client(HOST, PORT)
