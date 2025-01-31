@@ -23,7 +23,7 @@ For this project Unreal Engine 4.26 is used.
 Install the Git Repo
 ```
 cd existing_repo
-git remote add origin https://git.uni-wuppertal.de/buw-ki/student_theses/ma-grabowsky.git
+git remote add origin https://github.com/nagrab/Does-Knowledge-About-Perceptual-Uncertainty-Help-an-Agent-in-Automated-Driving.git
 git branch -M main
 git push -uf origin main
 ```
