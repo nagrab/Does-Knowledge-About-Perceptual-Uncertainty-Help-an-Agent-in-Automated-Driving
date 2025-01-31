@@ -1,6 +1,32 @@
-# Does_Uncertainty_Estimation_for_Perception_in_Automated_Driving_Help_for_Planning
-This repo contains the scripts for training and validating the reinforcement learner with PPO. 
-continuous_driver.py is the main script that contains the initialisation of CARLA, obtaining the observation and actions. 
+# Does Uncertainty Estimation for Perception in Automated Driving Help for Planning
+Agents in real-world scenarios like automated driv-
+ing deal with uncertainty in their environment, in particular
+due to perceptual uncertainty. Although, reinforcement learning
+is dedicated to autonomous decision-making under uncertainty
+these algorithms are typically not informed about the uncertainty
+currently contained in their environment. On the other hand,
+uncertainty estimation for perception itself is typically directly
+evaluated in the perception domain, e.g., in terms of false
+positive detection rates or calibration errors based on camera
+images. Its use for deciding on goal-oriented actions remains
+largely unstudied. In this paper, we investigate how an agent’s
+behavior is influenced by an uncertain perception and how
+this behavior changes if information about this uncertainty is
+available. Therefore, we consider a proxy task, where the agent is
+rewarded for driving a route as fast as possible without colliding
+with other road users. For controlled experiments, we introduce
+uncertainty in the state space by perturbing the perception of
+the given agent while informing the latter. Our experiments show
+that an unreliable observation space modeled by a perturbed
+perception leads to a conservative driving behavior of the agent.
+Furthermore, when adding the information about the current
+uncertainty directly to the state space, the agent adapts to the
+specific situation and in general accomplishes its task faster while,
+at the same time, accounting for risks\\
+
+## Information
+This reposity gives all relevant codes for reproduce the training, validation and testing process of the experiments from "Does Knowledge About Perceptual Uncertainty Help an Agent in Automated Driving". 
+The code based on the reposity of Razak: https://github.com/idreesshaikh/Autonomous-Driving-in-Carla-using-Deep-Reinforcement-Learning
 
 
 
