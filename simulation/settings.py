@@ -16,7 +16,7 @@ TIMEOUT = 20.0
 
 CAR_NAME = 'model3'
 EPISODE_LENGTH = 750
-NUMBER_OF_VEHICLES = 35#200 Town04 35 Town02 35
+NUMBER_OF_VEHICLES = 35   #This number can be modify but depends on the technical resources that are used. In case of more resource the number can be increased.
 NUMBER_OF_PEDESTRIAN = 20
 CONTINUOUS_ACTION = True
 VISUAL_DISPLAY = False
