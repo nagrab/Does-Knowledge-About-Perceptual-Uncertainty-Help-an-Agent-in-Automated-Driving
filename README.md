@@ -38,6 +38,7 @@ git remote add origin https://github.com/nagrab/Does-Knowledge-About-Perceptual-
 git branch -M main
 git push -uf origin main
 ```
+Before starting you have to define your paths for the checkpoints, the information about the checkpoints and where also other information that are important for the analyis of the agent's behavior are saved. Furthermore, in settings.py and parameters.py are the parameters that can be adjusted to optimize the policy for a new task.
 
 ## Start training:
 ```
